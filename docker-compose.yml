@@ -1,0 +1,12 @@
+version: '3'
+services:
+  ipam-api:
+    ports:
+      - "5000:5000"
+    image:
+      devipam
+    environment:
+      - VLAB_URL=https://localhost
+    volumes:
+      - ./vlab_ipam_api:/usr/lib/python3.6/site-packages/vlab_ipam_api
+    command: ["python3", "app.py"]

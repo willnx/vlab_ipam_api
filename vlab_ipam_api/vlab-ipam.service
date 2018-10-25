@@ -1,0 +1,11 @@
+[Unit]
+Description=RESTful API for vLab IPAM service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --ini app.ini
+WorkingDirectory=/usr/local/lib/python3.6/dist-packages/vlab_ipam_api
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
