@@ -16,8 +16,8 @@ DEFINED = OrderedDict([
             ('VLAB_URL', environ.get('VLAB_URL', 'https://localhost')),
             # Only the owner of the firewall can make changes - see views for context
             ('VLAB_IPAM_OWNER', socket.gethostname().split('.')[0]),
-            ('VLAB_PORT_MIN', int(environ.get('VLAB_PORT_MIN', 10000))),
-            ('VLAB_PORT_MAX', int(environ.get('VLAB_PORT_MAX', 10100))),
+            ('VLAB_PORT_MIN', int(environ.get('VLAB_PORT_MIN', 50000))),
+            ('VLAB_PORT_MAX', int(environ.get('VLAB_PORT_MAX', 50100))),
             ('VLAB_INSERT_MAX_TRIES', int(environ.get('VLAB_INSERT_MAX_TRIES', 100))),
             ('VLAB_VERIFY_TOKEN', environ.get('VLAB_VERIFY_TOKEN', False)),
           ])
