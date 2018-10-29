@@ -64,7 +64,7 @@ class PortMapView(BaseView):
         resp_data = {'user' : username, 'content' : {}}
         status_code = 200
         try:
-            resp_data['content']['port_map'] = current_app.firewall.show(table='nat', format='json')
+            resp_data['content']['port_map'] = current_app.firewall.show(table='nat', format='parsed')
         except Exception as doh:
             logger.exception(doh)
             resp_data['error'] = '%s' % doh
