@@ -128,7 +128,7 @@ class Database(object):
         :param conn_port: The local port connection that maps to a remote machine
         :type conn_port: Integer
         """
-        sql = "SELECT conn_port, target_port, target_addr FROM ipam WHERE conn_port=(%s);"
+        sql = "SELECT target_port, target_addr FROM ipam WHERE conn_port=(%s);"
         rows = list(self.execute(sql, params=(conn_port,)))
         if rows:
             target_port, target_addr = rows[0]

@@ -29,7 +29,7 @@ class FireWall(object):
         # to also release the lock for every call to acquire it. Thankfully
         # Python makes this easy via Context Managers (i.e. ``with`` statement)
         # (http://book.pythontips.com/en/latest/context_managers.html)
-        self._rlock = RLock
+        self._rlock = RLock()
 
     def __enter__(self):
         """Enable use of the ``with`` statement to serialize changes to iptables"""
@@ -52,7 +52,7 @@ class FireWall(object):
         :param target_addr: The IP address of the remote machien to map to.
         :type target_addr: String
         """
-        with self._rlock():
+        with self:
             forward_id = self.forward(target_port=target_port, target_addr=target_addr)
             try:
                 prerouting_id = self.prerouting(conn_port=conn_port, target_port=target_port, target_addr=target_addr)
@@ -98,7 +98,7 @@ class FireWall(object):
         """
         run_cmd('sudo iptables -A PREROUTING -t nat -i ens160 -p tcp --dport {} -j DNAT --to {}:{}'.format(conn_port, target_addr, target_port))
         try:
-            prerouting_id = self.find_rule(target_port, target_addr, table='nat')
+            prerouting_id = self.find_rule(target_port, target_addr, table='nat', conn_port=conn_port)
         except RuntimeError:
             raise RuntimeError('Unable to find newly created PERROUTING rule for port {} to {}:{}'.format(conn_port, target_addr, target_port))
         else:
@@ -118,6 +118,9 @@ class FireWall(object):
         :param table: The specific table within iptables to delete a rule from.
                       Must be either 'filter' or 'nat'.
         :type table: String
+
+        :conn_port: The local port that maps to a remote port. Used for NAT table lookups.
+        :conn_port: Integer
         """
         if table.lower() == 'nat' and conn_port is None:
             error = "Must supply conn_port when looking up NAT rules"
@@ -146,14 +149,18 @@ class FireWall(object):
                       Must be either 'filter' or 'nat'.
         :type table: String
         """
-        with self._rlock():
-            if not table.lower() in ('nat', 'filter'):
+        with self:
+            if table.lower() == 'nat':
+                chain = 'PREROUTING'
+            elif table.lower() == 'filter':
+                chain = 'FORWARD'
+            else:
                 raise ValueError('Param "table" must be either "nat" or "filter", supplied: {}'.format(table))
-            run_cmd('iptables -t {} -D {}'.format(table, rule_id))
+            run_cmd('iptables -t {} -D {} {}'.format(table, chain, rule_id))
 
     def save_rules(self):
         """Make the current firewall config persist reboots"""
-        with self._rlock():
+        with self:
             result = run_cmd('sudo iptables-save')
             with open('/etc/iptables/rules.v4', 'w') as the_file:
                 the_file.write(result.stdout)
@@ -171,7 +178,7 @@ class FireWall(object):
         :param format: Set to 'raw' for unprocess output, or 'parsed' for just the important stuff
         :type format: String, default 'parsed'
         """
-        with self._rlock():
+        with self:
             if table.lower() == 'nat':
                 result = run_cmd('sudo iptables --numeric -L PREROUTING -t nat --line-numbers')
                 if format.lower() == 'parsed':
@@ -188,9 +195,9 @@ class FireWall(object):
                 raise ValueError('Param "table" must be either "nat" or "filter", supplied: {}'.format(table))
 
     def _prettify_nat_output(self, output):
-        """Takes the ``iptables`` output, and turns it into a user-friendly JSON object
+        """Takes the ``iptables`` output, and turns it into a user-friendly object
 
-        :Returns: String
+        :Returns: Dictionary
 
         :param output: The raw output from the ``iptables`` command
         :type output: String
@@ -206,20 +213,20 @@ class FireWall(object):
                 # trailing newline chars...
                 continue
             columns = row.split()
-            id = columns[0]
+            rid = columns[0]
             conn_port = columns[-2].split(':')[-1]
             target = columns[-1]
             _, target_ip, target_port = target.split(':')
-            rules[id] = {'conn_port': conn_port,
-                         'target_ip': target_ip,
-                         'target_port': target_port
+            rules[rid] = {'conn_port': int(conn_port),
+                         'target_addr': target_ip,
+                         'target_port': int(target_port),
                         }
         return rules
 
     def _prettify_filter_output(self, output):
-        """Takes the ``iptables`` output, and turns it into a user-friendly JSON object
+        """Takes the ``iptables`` output, and turns it into a user-friendly object
 
-        :Returns: String
+        :Returns: Dictionary
 
         :param output: Th raw output from the ``iptables`` command
         :type output: String
@@ -227,15 +234,20 @@ class FireWall(object):
         # Example of output:
         # Chain FORWARD (policy ACCEPT)
         # num  target     prot opt source               destination
-        # 1    ACCEPT     tcp  --  0.0.0.0/0            192.168.1.2          tcp dpt:22
+        # 1    LOG        all  --  0.0.0.0/0            0.0.0.0/0            LOG flags 0 level 4
+        # 2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+        # 3    ACCEPT     tcp  --  0.0.0.0/0            192.168.1.2          tcp dpt:22
         rows = output.split('\n')[2:]
         rules = {}
         for row in rows:
             if not row:
                 continue
             columns = row.split()
-            id = columns[0]
+            rid = columns[0]
+            if rid in ('1', '2'):
+                # default rules; skip
+                continue
             target_ip = columns[5]
             target_port = columns[7].split(':')[-1]
-            rules[id] = {'target_ip': target_ip, 'target_port': target_port}
+            rules[rid] = {'target_addr': target_ip, 'target_port': int(target_port)}
         return rules

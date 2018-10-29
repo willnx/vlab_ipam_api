@@ -123,7 +123,7 @@ class PortMapView(BaseView):
                 # Only locking here because deleting requires multiple updates
                 with current_app.firewall:
                     nat_id = current_app.firewall.find_rule(target_port, target_addr, table='nat', conn_port=conn_port)
-                    filter_id = current_app.firewall.find_rule(target_port, target_addr, table='nat')
+                    filter_id = current_app.firewall.find_rule(target_port, target_addr, table='filter')
                     record_error, status_code = records_valid(nat_id, filter_id, target_port, target_addr)
                     if not record_error:
                         error, status_code = remove_port_map(nat_id, filter_id, target_port, target_addr, conn_port, db)

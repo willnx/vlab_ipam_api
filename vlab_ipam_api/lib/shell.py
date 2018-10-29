@@ -73,6 +73,6 @@ def run_cmd(cli_syntax):
         stdout, stderr = proc.communicate()
         exit_code = proc.returncode
     if exit_code:
-        raise CliError(cli_syntax, stdout.decode(), stderr.decode(), exit_code)
+        raise CliError(cli_syntax, stdout, stderr, exit_code)
     else:
         return CliResult(cli_syntax, stdout.decode(), stderr.decode(), exit_code)

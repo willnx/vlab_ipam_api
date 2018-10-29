@@ -38,9 +38,9 @@ class TestFirewallInternals(unittest.TestCase):
 
         fw = firewall.FireWall()
         output = fw._prettify_nat_output(textwrap.dedent(example))
-        expected = {'1': {'conn_port': '6000',
-                          'target_ip': '192.168.1.2',
-                          'target_port': '22'}}
+        expected = {'1': {'conn_port': 6000,
+                          'target_addr': '192.168.1.2',
+                          'target_port': 22}}
 
         self.assertEqual(output, expected)
 
@@ -49,13 +49,15 @@ class TestFirewallInternals(unittest.TestCase):
         example = """\
         Chain FORWARD (policy ACCEPT)
         num  target     prot opt source               destination
-        1    ACCEPT     tcp  --  0.0.0.0/0            192.168.1.2          tcp dpt:22
+        1    LOG        all  --  0.0.0.0/0            0.0.0.0/0            LOG flags 0 level 4
+        2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+        3    ACCEPT     tcp  --  0.0.0.0/0            192.168.1.2          tcp dpt:22
         """
 
         fw = firewall.FireWall()
         output = fw._prettify_filter_output(textwrap.dedent(example))
-        expected = {'1': {'target_ip': '192.168.1.2',
-                          'target_port': '22'}}
+        expected = {'3': {'target_addr': '192.168.1.2', 'target_port': 22}}
+
 
         self.assertEqual(output, expected)
 
@@ -80,14 +82,25 @@ class TestFireWall(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.fw.delete_rule(rule_id=23432, table='NoTable')
 
-    def test_delete_rule(self, fake_run_cmd):
-        """``delete_rule`` runs the correct syntax to remove a rule by ID from iptables"""
+    def test_delete_rule_nat(self, fake_run_cmd):
+        """``delete_rule`` runs the correct syntax to remove a rule by ID from iptables from the nat table"""
         self.fw.delete_rule(rule_id=9001, table='nat')
 
         args, _ = fake_run_cmd.call_args
 
         syntax_sent = args[0]
-        expected = 'iptables -t nat -D 9001'
+        expected = 'iptables -t nat -D PREROUTING 9001'
+
+        self.assertEqual(syntax_sent, expected)
+
+    def test_delete_rule_filter(self, fake_run_cmd):
+        """``delete_rule`` runs the correct syntax to remove a rule by ID from iptables from the filter table"""
+        self.fw.delete_rule(rule_id=9001, table='filter')
+
+        args, _ = fake_run_cmd.call_args
+
+        syntax_sent = args[0]
+        expected = 'iptables -t filter -D FORWARD 9001'
 
         self.assertEqual(syntax_sent, expected)
 
@@ -318,7 +331,7 @@ class TestFireWall(unittest.TestCase):
                          target_port=22,
                          target_addr='8.6.5.3')
 
-        self.assertEqual(self.fw._rlock.call_count, 1)
+        self.assertEqual(self.fw._rlock.acquire.call_count, 1)
 
     def test_map_port_undo(self, fake_run_cmd):
         """``map_port`` deletes the FORWARD rule if it fails to also create the PREROUTING rule"""
