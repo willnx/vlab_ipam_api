@@ -135,3 +135,42 @@ class Database(object):
         else:
             target_port, target_addr = None, None
         return target_port, target_addr
+
+    def lookup_addr(self, name, addr, component):
+        """Obtain information about a machine in a lab.
+
+        :Returns: Dictionary
+
+        :param name: The specific name of a machine in the lab to lookup the address of.
+        :type name: String
+
+        :param addr: The IP address to lookup meta data about.
+        :type addr: String
+
+        :param component: The type of vLab component to look up (i.e. OneFS, ESRS, etc)
+        :type component: String
+        """
+        # No aggregations, so DISTINCT is OK
+        # Using DISTINCT because the table is unique across conn_port
+        if addr:
+            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_addr LIKE (%s);"
+            params=(addr,)
+        elif name:
+            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_name LIKE (%s);"
+            params=(name,)
+        elif component:
+            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_component LIKE (%s);"
+            params=(component,)
+        else:
+            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam;"
+            params=None
+        data = self.execute(sql, params=params)
+        answer = {}
+        if data:
+            for the_name, the_addr, the_component in data:
+                result = answer.setdefault(the_name, {})
+                result['component'] = the_component
+                # Might have multiple IPs on a single machine
+                ips = result.setdefault('addr', [])
+                ips.append(the_addr)
+        return answer
