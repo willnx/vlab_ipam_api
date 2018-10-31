@@ -1,0 +1,11 @@
+[Unit]
+Description=Background worker to validate vLab IPAM records
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 worker.py
+WorkingDirectory=/usr/local/lib/python3.6/dist-packages/vlab_ipam_api
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

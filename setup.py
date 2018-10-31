@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 setup(name="vlab-ipam-api",
       author="Nicholas Willhite,",
       author_email='willnx84@gmail.com',
-      version='0.0.6',
+      version='0.0.7',
       packages=find_packages(),
       include_package_data=True,
       classifiers=[
@@ -18,12 +18,11 @@ setup(name="vlab-ipam-api",
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
       ],
       package_files={'vlab_ipam_api' : ['app.ini']},
       description="A RESTful API for automated IPAM of a personal lab in vLab",
       long_description=open('README.rst').read(),
       install_requires=['flask', 'pyjwt', 'uwsgi', 'vlab-api-common', 'psycopg2',
-                        'ujson', 'cryptography',]
+                        'ujson', 'cryptography', 'setproctitle']
       )

@@ -150,26 +150,27 @@ class Database(object):
         :param component: The type of vLab component to look up (i.e. OneFS, ESRS, etc)
         :type component: String
         """
-        # No aggregations, so DISTINCT is OK
+        # No nested SQL queries so DISTINCT is OK
         # Using DISTINCT because the table is unique across conn_port
         if addr:
-            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_addr LIKE (%s);"
+            sql = "SELECT DISTINCT target_name, target_addr, target_component, routable FROM ipam WHERE target_addr LIKE (%s);"
             params=(addr,)
         elif name:
-            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_name LIKE (%s);"
+            sql = "SELECT DISTINCT target_name, target_addr, target_component, routable FROM ipam WHERE target_name LIKE (%s);"
             params=(name,)
         elif component:
-            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam WHERE target_component LIKE (%s);"
+            sql = "SELECT DISTINCT target_name, target_addr, target_component, routable FROM ipam WHERE target_component LIKE (%s);"
             params=(component,)
         else:
-            sql = "SELECT DISTINCT target_name, target_addr, target_component FROM ipam;"
+            sql = "SELECT DISTINCT target_name, target_addr, target_component, routable FROM ipam;"
             params=None
         data = self.execute(sql, params=params)
         answer = {}
         if data:
-            for the_name, the_addr, the_component in data:
+            for the_name, the_addr, the_component, routable in data:
                 result = answer.setdefault(the_name, {})
                 result['component'] = the_component
+                result['routable'] = routable
                 # Might have multiple IPs on a single machine
                 ips = result.setdefault('addr', [])
                 ips.append(the_addr)
