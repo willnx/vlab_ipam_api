@@ -152,6 +152,8 @@ setup_webapp () {
   pip3 install vlab-ipam-api
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-ipam.service /etc/systemd/system/vlab-ipam.service
   systemctl enable vlab-ipam
+  ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-worker.service
+  systemctl enable vlab-worker
   echo "VLAB_URL=https://vlab-dev.igs.corp" >> /etc/environment
 }
 
@@ -184,7 +186,8 @@ sed -i -e 's/local   all             postgres                                pee
     target_addr TEXT,
     target_port INT,
     target_name TEXT,
-    target_component TEXT
+    target_component TEXT,
+    routable  Boolean
   );
   CREATE USER readonly;
   ALTER USER readonly with encrypted password 'a';

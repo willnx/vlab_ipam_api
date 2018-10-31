@@ -162,52 +162,52 @@ class TestDatabase(unittest.TestCase):
 
     def test_lookup_addr_name(self):
         """``lookup_addr`` returns a dictionary when query via name param"""
-        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent')]
+        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent', True)]
 
         db = database.Database()
         result = db.lookup_addr(name='myTarget', addr=None, component=None)
-        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent'}}
+        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent', 'routable': True}}
 
         self.assertEqual(result, expected)
 
     def test_lookup_addr_addr(self):
         """``lookup_addr`` returns a dictionary when query via addr param"""
-        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent')]
+        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent', True)]
 
         db = database.Database()
         result = db.lookup_addr(name=None, addr='1.2.3.4', component=None)
-        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent'}}
+        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent', 'routable': True}}
 
         self.assertEqual(result, expected)
 
     def test_lookup_addr_component(self):
         """``lookup_addr`` returns a dictionary when query via component param"""
-        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent')]
+        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent', True)]
 
         db = database.Database()
         result = db.lookup_addr(name=None, addr=None, component='someComponent')
-        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent'}}
+        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent', 'routable': True}}
 
         self.assertEqual(result, expected)
 
     def test_lookup_addr_multiple_ips(self):
         """``lookup_addr`` returns all IPs"""
-        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent'),
-                                                    ('myTarget', '2.3.4.5', 'someComponent')]
+        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent', True),
+                                                    ('myTarget', '2.3.4.5', 'someComponent', True)]
 
         db = database.Database()
         result = db.lookup_addr(name=None, addr=None, component='someComponent')
-        expected = {'myTarget': {'addr': ['1.2.3.4', '2.3.4.5'], 'component' : 'someComponent'}}
+        expected = {'myTarget': {'addr': ['1.2.3.4', '2.3.4.5'], 'component' : 'someComponent', 'routable': True}}
 
         self.assertEqual(result, expected)
 
     def test_lookup_addr_none(self):
         """``lookup_addr`` returns a dictionary when all params are none"""
-        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent')]
+        self.mocked_cursor.fetchall.return_value = [('myTarget', '1.2.3.4', 'someComponent', True)]
 
         db = database.Database()
         result = db.lookup_addr(name=None, addr=None, component=None)
-        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent'}}
+        expected = {'myTarget': {'addr': ['1.2.3.4'], 'component' : 'someComponent', 'routable': True}}
 
         self.assertEqual(result, expected)
 
