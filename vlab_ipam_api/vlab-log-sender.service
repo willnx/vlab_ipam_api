@@ -1,0 +1,11 @@
+[Unit]
+Description=Background worker upload firewall logs for processing
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 log_sender.py
+WorkingDirectory=/usr/local/lib/python3.6/dist-packages/vlab_ipam_api
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
