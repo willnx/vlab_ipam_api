@@ -36,7 +36,7 @@ class AddrView(BaseView):
                        },
                       }
 
-    @requires(version=2, username=const.VLAB_IPAM_OWNER, verify=const.VLAB_VERIFY_TOKEN)
+    @requires(version=2, verify=const.VLAB_VERIFY_TOKEN)
     @describe(get_args=GET_ARGS_SCHEMA)
     def get(self, *args, **kwargs):
         """Display the Port Map rules defined on the NAT firewall"""

@@ -21,7 +21,6 @@ class TestAddrView(unittest.TestCase):
         """Runs once for the whole test suite"""
         cls.token = generate_v2_test_token(username='bob')
         addr.const = MagicMock()
-        addr.const.VLAB_IPAM_OWNER = 'bob'
         addr.const.VLAB_IPAM_LOG_LEVEL = 'INFO'
         addr.const.VLAB_VERIFY_TOKEN = False
 
