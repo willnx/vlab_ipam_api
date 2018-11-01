@@ -9,13 +9,6 @@ from vlab_ipam_api import worker
 class TestWorker(unittest.TestCase):
     """A suite of test cases for the worker.py module"""
 
-    @patch.object(worker, 'RotatingFileHandler')
-    def test_get_logger(self, fake_RotatingFileHandler):
-        """``get_logger`` Returns a logging object"""
-        logger = worker.get_logger(name='testing')
-
-        self.assertTrue(isinstance(logger, worker.logging.Logger))
-
     @patch.object(worker, 'pingable')
     @patch.object(worker, 'update_record')
     def test_worker_thread(self, fake_update_record, fake_pingable):
