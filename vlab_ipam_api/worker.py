@@ -4,12 +4,10 @@ import sys
 import time
 import queue
 import threading
-import logging
-from logging.handlers import RotatingFileHandler
 
 from setproctitle import setproctitle
 
-from vlab_ipam_api.lib import const, shell, Database
+from vlab_ipam_api.lib import const, shell, Database, get_logger
 
 
 LOOP_INTERVAL = 300 # seconds
@@ -17,28 +15,6 @@ THREAD_POLL_TIMEOUT = 10 # seconds
 THREAD_COUNT = 10
 LOG_FILE = '/var/log/vlab_ipam_worker.log'
 PING_SYNTAX = '/bin/ping -W 2 -c 3 -4 -I ens192 {}'
-
-
-def get_logger(name, loglevel='INFO'):
-    """Simple factory function for creating logging objects
-
-    :Returns: logging.Logger
-
-    :param name: The name of the logger (typically just __name__).
-    :type name: String
-
-    :param loglevel: The verbosity of the logging; ERROR, INFO, DEBUG
-    :type loglevel: String
-    """
-    logger = logging.getLogger(name)
-    logger.setLevel(loglevel.upper())
-    if not logger.handlers:
-        ch = RotatingFileHandler(LOG_FILE, maxBytes=500000, backupCount=1)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        ch.setLevel(loglevel.upper())
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-    return logger
 
 
 class Worker(threading.Thread):
@@ -209,7 +185,7 @@ def make_workers(work_queue, logger):
 def main():
     """Entry point logic for validating IP records"""
     work_queue = queue.Queue()
-    logger = get_logger(name=__name__)
+    logger = get_logger(name=__name__, log_file=LOG_FILE)
     logger.info('IPAM Address Probe Starting')
     logger.info('Starting {} worker threads'.format(THREAD_COUNT))
     worker_threads = make_workers(work_queue, logger)

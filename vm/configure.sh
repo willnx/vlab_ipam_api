@@ -154,7 +154,8 @@ setup_webapp () {
   systemctl enable vlab-ipam
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-worker.service
   systemctl enable vlab-worker
-  echo "VLAB_URL=https://vlab-dev.igs.corp" >> /etc/environment
+  ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-log-sender.service
+  systemctl enable vlab-log-sender
 }
 
 setup_sudo () {
@@ -195,6 +196,11 @@ sed -i -e 's/local   all             postgres                                pee
   ALTER DEFAULT PRIVILEGES IN SCHEMA public
     GRANT SELECT ON TABLES TO readonly;
   "
+}
+
+setup_rsyslog () {
+  # This function changes the timestamp format used by rsyslog
+sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/g' /etc/rsyslog.conf
 }
 
 clean_up () {

@@ -20,6 +20,7 @@ DEFINED = OrderedDict([
             ('VLAB_PORT_MAX', int(environ.get('VLAB_PORT_MAX', 50100))),
             ('VLAB_INSERT_MAX_TRIES', int(environ.get('VLAB_INSERT_MAX_TRIES', 100))),
             ('VLAB_VERIFY_TOKEN', environ.get('VLAB_VERIFY_TOKEN', False)),
+            ('VLAB_LOG_TARGET', environ.get('VLAB_LOG_TARGET', 'localhost:9092')),
           ])
 
 Constants = namedtuple('Constants', list(DEFINED.keys()))
