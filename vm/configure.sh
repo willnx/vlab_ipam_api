@@ -154,7 +154,7 @@ setup_webapp () {
   systemctl enable vlab-ipam
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-worker.service
   systemctl enable vlab-worker
-  ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-log-sender.service
+  ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-log-sender.service /etc/systemd/system/vlab-log-sender.service
   systemctl enable vlab-log-sender
 }
 
