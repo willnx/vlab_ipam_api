@@ -166,6 +166,9 @@ echo "
 nobody ALL=NOPASSWD: /sbin/iptables
 nobody ALL=NOPASSWD: /sbin/ip6tables
 nobody ALL=NOPASSWD: /sbin/iptables-save
+
+# Enable the vLAB server to automate the config
+administrator ALL=(ALL) NOPASSWD:ALL
 " > /etc/sudoers.d/vLabAPI
 }
 
@@ -206,15 +209,31 @@ sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFi
 clean_up () {
   # Remove any lingering junk and get the VM ready for cloning
   echo "Cleaning up junk"
+  rm configure.sh
   echo "" > /var/log/lastlog
   history -c
 }
 
+add_envvars () {
+  # Set the nesseary enviroment variables now so replacing them later is easier
+  echo "VLAB_LOG_TARGET=localhost:9092" >> /etc/environment
+}
+
+add_logsender_key () {
+  # Enable automation to set encryption key
+  echo "changeME" > /etc/vlab/log_sender.key
+}
+
+setup_etc () {
+  # Make the /etc/vlab directory
+  mkdir /etc/vlab
+  chmod 700 /etc/vlab
+}
 
 main () {
   # Ties all the smaller functions together
   echo "Converting Ubuntu 18.04 server into vLab Firewall"
-  mkdir /etc/vlab
+  setup_etc
   setup_sysctls
   install_deb_deps
   setup_nics
@@ -223,6 +242,8 @@ main () {
   setup_cert
   setup_webapp
   setup_sudo
+  add_envvars
+  add_logsender_key
   setup_db
   clean_up
   echo "All done, shutting down machine (so you can convert it into a VM template)"
