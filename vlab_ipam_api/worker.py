@@ -7,7 +7,7 @@ import threading
 
 from setproctitle import setproctitle
 
-from vlab_ipam_api.lib import const, shell, Database, get_logger
+from vlab_ipam_api.lib import shell, Database, get_logger
 
 
 LOOP_INTERVAL = 300 # seconds
