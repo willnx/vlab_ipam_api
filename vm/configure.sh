@@ -217,6 +217,8 @@ clean_up () {
 add_envvars () {
   # Set the nesseary enviroment variables now so replacing them later is easier
   echo "VLAB_LOG_TARGET=localhost:9092" >> /etc/environment
+  echo "VLAB_URL=https://localhost" >> /etc/environment
+  echo "PRODUCTION=false" >> /etc/environment
 }
 
 add_logsender_key () {
