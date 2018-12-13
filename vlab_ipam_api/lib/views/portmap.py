@@ -52,19 +52,51 @@ class PortMapView(BaseView):
                      },
                      "required": ["conn_port"]
                     }
-    GET_SCHEMA = {"$schema": "http://json-schema.org/draft-04/schema#",
-                  "description": "Display details about the port map rules configured"
+    GET_ARGS_SCHEMA = {"$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "description": "Display details about the port map rules configured",
+                  "properties" : {
+                      "name": {
+                         "type": "string",
+                         "description": "Filter results by VM name"
+                      },
+                      "target_addr" : {
+                         "type": "string",
+                         "description": "Filter results by VM IP address"
+                      },
+                      "component": {
+                         "type": "string",
+                         "description": "Filter results by VM type (i.e. OneFS, InsightIQ, etc)"
+                      },
+                      "conn_port": {
+                         "type": "integer",
+                         "description": "Filter results by the connection port"
+                      }
+                  },
                  }
 
     @requires(version=2, username=const.VLAB_IPAM_OWNER, verify=const.VLAB_VERIFY_TOKEN)
-    @describe(post=POST_SCHEMA, delete=DELETE_SCHEMA, get=GET_SCHEMA)
+    @describe(post=POST_SCHEMA, delete=DELETE_SCHEMA, get_args=GET_ARGS_SCHEMA)
     def get(self, *args, **kwargs):
         """Display the Port Map rules defined on the NAT firewall"""
         username = kwargs['token']['username']
         resp_data = {'user' : username, 'content' : {}}
         status_code = 200
+        name = request.args.get('name', None)
+        addr = request.args.get('target_addr', None)
+        component = request.args.get('component', None)
+        conn_port = request.args.get('conn_port', None)
+        if conn_port:
+            try:
+                conn_port = int(conn_port)
+            except Exception as doh:
+                resp_data['error'] = '%s' % doh
+                resp = Response(ujson.dumps(resp_data))
+                resp.status_code = 400
+                return resp
         try:
-            resp_data['content']['port_map'] = current_app.firewall.show(table='nat', format='parsed')
+            with Database() as db:
+                resp_data['content'] = db.lookup_port(name=name, addr=addr, component=component, conn_port=conn_port)
         except Exception as doh:
             logger.exception(doh)
             resp_data['error'] = '%s' % doh

@@ -40,20 +40,37 @@ class TestPortMapView(unittest.TestCase):
         cls.fake_logger = MagicMock()
         portmap.logger = cls.fake_logger
 
-    def test_get(self):
+    @patch.object(portmap, 'Database')
+    def test_get(self, fake_Database):
         """GET on /api/1/ipam/portmap returns the port mapping rules"""
-        self.fake_firewall.show.return_value = {'worked': True}
+        fake_db = MagicMock()
+        fake_db.lookup_port.return_value = {'worked': True}
+        fake_Database.return_value.__enter__.return_value = fake_db
         resp = self.app.get('/api/1/ipam/portmap',
                             headers={'X-Auth': self.token})
 
         output = resp.json['content']
-        expected = {'port_map' : {'worked': True}}
+        expected = {'worked': True}
 
         self.assertEqual(output, expected)
 
-    def test_get_doh_status(self):
+    @patch.object(portmap, 'Database')
+    def test_get_bad_conn_port(self, fake_Database):
+        """GET on /api/1/ipam/portmap returns HTTP 400 is supplied with a bad value"""
+        fake_db = MagicMock()
+        fake_db.lookup_port.return_value = {'worked': True}
+        fake_Database.return_value.__enter__.return_value = fake_db
+        resp = self.app.get('/api/1/ipam/portmap?conn_port=asdf',
+                            headers={'X-Auth': self.token})
+
+        expected = 400
+
+        self.assertEqual(resp.status_code, expected)
+
+    @patch.object(portmap, 'Database')
+    def test_get_doh_status(self, fake_Database):
         """GET on /api/1/ipam/portmap returns HTTP 500 upon error"""
-        self.fake_firewall.show.side_effect = [RuntimeError('testing')]
+        fake_Database.return_value.__enter__.side_effect = [RuntimeError('testing')]
         resp = self.app.get('/api/1/ipam/portmap',
                             headers={'X-Auth': self.token})
 
@@ -61,9 +78,10 @@ class TestPortMapView(unittest.TestCase):
 
         self.assertEqual(resp.status_code, expected)
 
-    def test_get_doh_msg(self):
+    @patch.object(portmap, 'Database')
+    def test_get_doh_msg(self, fake_Database):
         """GET on /api/1/ipam/portmap sets the error in the response upon failure"""
-        self.fake_firewall.show.side_effect = [RuntimeError('testing')]
+        fake_Database.return_value.__enter__.side_effect = [RuntimeError('testing')]
         resp = self.app.get('/api/1/ipam/portmap',
                             headers={'X-Auth': self.token})
 
