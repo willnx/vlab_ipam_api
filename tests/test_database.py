@@ -211,5 +211,101 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(result, expected)
 
+    def test_lookup_port(self):
+        """``lookup_port`` generates correct SQL when no clauses are supplied"""
+        db = database.Database()
+        db.lookup_port()
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, _ = call_args
+        expected = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam;'
+
+        self.assertEqual(sql, expected)
+
+    def test_lookup_port_by_name(self):
+        """``lookup_port`` generates correct SQL when the "name" clause is supplied"""
+        db = database.Database()
+        db.lookup_port(name='foo')
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE name LIKE (%s);'
+        expected_params = ('foo',)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_by_addr(self):
+        """``lookup_port`` generates correct SQL when the "addr" clause is supplied"""
+        db = database.Database()
+        db.lookup_port(addr='192.168.1.2')
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_addr LIKE (%s);'
+        expected_params = ('192.168.1.2',)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_by_component(self):
+        """``lookup_port`` generates correct SQL when the "component" clause is supplied"""
+        db = database.Database()
+        db.lookup_port(component='OneFS')
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_component LIKE (%s);'
+        expected_params = ('OneFS',)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_by_conn_port(self):
+        """``lookup_port`` generates correct SQL when the "conn_port" clause is supplied"""
+        db = database.Database()
+        db.lookup_port(conn_port=9001)
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE conn_port = (%s);'
+        expected_params = (9001,)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_by_all(self):
+        """``lookup_port`` generates correct SQL when the all clauses are supplied"""
+        db = database.Database()
+        db.lookup_port(name='myVM', addr='1.2.3.4', component='CEE', conn_port=9001)
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE name LIKE (%s) AND target_addr LIKE (%s) AND target_component LIKE (%s) AND conn_port = (%s);'
+        expected_params = ('myVM', '1.2.3.4', 'CEE', 9001,)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_response(self):
+        """``lookup_port`` returns the expected data structure"""
+        self.mocked_cursor.fetchall.return_value = [(9001, '1.2.3.4', 'myVM', 'someComponent', 22),
+                                                    (9008, '1.2.3.4', 'myVM', 'someComponent', 443)]
+
+        db = database.Database()
+        result = db.lookup_port()
+        expected = {9001: {'name': 'myVM',
+                           'target_addr': '1.2.3.4',
+                           'target_port': 'someComponent',
+                           'component': 22},
+                    9008: {'name': 'myVM',
+                           'target_addr': '1.2.3.4',
+                           'target_port':
+                           'someComponent',
+                           'component': 443}}
+
+        self.assertEqual(result, expected)
+
+
 if __name__ == '__main__':
     unittest.main()

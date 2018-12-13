@@ -175,3 +175,51 @@ class Database(object):
                 ips = result.setdefault('addr', [])
                 ips.append(the_addr)
         return answer
+
+    def lookup_port(self, name=None, addr=None, component=None, conn_port=None):
+        """Obtain port mapping information
+
+        :Returns: Dictionary
+
+        :param name: The name of the VM
+        :type name: String
+
+        :param addr: The IP address of the VM
+        :type addr: String
+
+        :param component: The category of VM (i.e. OneFS, InsightIQ, etc)
+        :type component: String
+
+        :param conn_port: The connection port
+        :type conn_port: Integer
+        """
+        sql = "SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam"
+        clauses = []
+        params = []
+        if name:
+            clauses.append("name LIKE (%s)")
+            params.append(name)
+        if addr:
+            clauses.append('target_addr LIKE (%s)')
+            params.append(addr)
+        if component:
+            clauses.append('target_component LIKE (%s)')
+            params.append(component)
+        if conn_port:
+            clauses.append('conn_port = (%s)')
+            params.append(conn_port)
+        where = ' AND '.join(clauses)
+        if where:
+            query = "{} WHERE {};".format(sql, where)
+        else:
+            query = "{};".format(sql)
+        data = self.execute(query, params=tuple(params))
+        answer = {}
+        if data:
+            for the_port, the_addr, the_name, the_target_port, the_component in data:
+                result = answer.setdefault(the_port, {})
+                result['name'] = the_name
+                result['target_addr'] = the_addr
+                result['target_port'] = the_target_port
+                result['component'] = the_component
+        return answer

@@ -25,7 +25,7 @@ class TestIpamViewSchema(unittest.TestCase):
     def test_get_schema(self):
         """The schema defined for GET on is valid"""
         try:
-            Draft4Validator.check_schema(portmap.PortMapView.GET_SCHEMA)
+            Draft4Validator.check_schema(portmap.PortMapView.GET_ARGS_SCHEMA)
             schema_valid = True
         except RuntimeError:
             schema_valid = False
