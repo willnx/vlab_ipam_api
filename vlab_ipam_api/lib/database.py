@@ -197,7 +197,7 @@ class Database(object):
         clauses = []
         params = []
         if name:
-            clauses.append("name LIKE (%s)")
+            clauses.append("target_name LIKE (%s)")
             params.append(name)
         if addr:
             clauses.append('target_addr LIKE (%s)')
