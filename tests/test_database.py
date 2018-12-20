@@ -229,7 +229,7 @@ class TestDatabase(unittest.TestCase):
 
         call_args, _ = self.mocked_cursor.execute.call_args
         sql, call_params = call_args
-        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE name LIKE (%s);'
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_name LIKE (%s);'
         expected_params = ('foo',)
 
         self.assertEqual(sql, expected_sql)
@@ -281,7 +281,7 @@ class TestDatabase(unittest.TestCase):
 
         call_args, _ = self.mocked_cursor.execute.call_args
         sql, call_params = call_args
-        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE name LIKE (%s) AND target_addr LIKE (%s) AND target_component LIKE (%s) AND conn_port = (%s);'
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_name LIKE (%s) AND target_addr LIKE (%s) AND target_component LIKE (%s) AND conn_port = (%s);'
         expected_params = ('myVM', '1.2.3.4', 'CEE', 9001,)
 
         self.assertEqual(sql, expected_sql)
