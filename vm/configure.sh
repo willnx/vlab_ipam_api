@@ -207,6 +207,9 @@ sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFi
 }
 
 clean_up () {
+  # fix issue with different VMs getting same DHCP addr
+  # https://github.com/chef/bento/issues/1062
+  echo "" > /etc/machine-id
   # Remove any lingering junk and get the VM ready for cloning
   echo "Cleaning up junk"
   rm configure.sh
