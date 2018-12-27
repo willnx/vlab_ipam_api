@@ -9,11 +9,11 @@ from setuptools import setup, find_packages
 setup(name="vlab-ipam-api",
       author="Nicholas Willhite,",
       author_email='willnx84@gmail.com',
-      version='2018.12.20',
+      version='2018.12.27',
       packages=find_packages(),
       include_package_data=True,
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
