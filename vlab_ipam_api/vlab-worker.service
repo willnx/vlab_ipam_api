@@ -1,6 +1,6 @@
 [Unit]
 Description=Background worker to validate vLab IPAM records
-After=network.target
+After=postgresql.service
 
 [Service]
 EnvironmentFile=/etc/environment

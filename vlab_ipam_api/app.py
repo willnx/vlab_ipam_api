@@ -2,13 +2,14 @@
 from flask import Flask
 
 from vlab_ipam_api.lib import const
-from vlab_ipam_api.lib.views import HealthView, PortMapView
+from vlab_ipam_api.lib.views import HealthView, PortMapView, AddrView
 from vlab_ipam_api.lib.firewall import FireWall
 
 
 app = Flask(__name__)
 app.firewall = FireWall() # Attach to app, and call within views via ``current_app``
 
+AddrView.register(app)
 HealthView.register(app)
 PortMapView.register(app)
 
