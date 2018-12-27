@@ -133,8 +133,10 @@ def do_work(worker_threads, work_queue, logger):
     keep_running = True
     while keep_running:
         start_time = time.time()
+        logger.info('Looking up IP records')
         with Database() as db:
             records = db.execute("SELECT DISTINCT target_name, target_addr FROM ipam;")
+            logger.info('Found {} IP records to check'.format(len(records)))
             for record in records:
                 work_queue.put(record)
 
