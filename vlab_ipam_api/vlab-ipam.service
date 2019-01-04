@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 EnvironmentFile=/etc/environment
-ExecStart=/usr/local/bin/uwsgi --ini app.ini
+ExecStart=/usr/local/bin/uwsgi --need-app --ini app.ini
 WorkingDirectory=/usr/local/lib/python3.6/dist-packages/vlab_ipam_api
 Restart=always
 
