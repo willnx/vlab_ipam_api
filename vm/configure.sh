@@ -47,7 +47,7 @@ echo '
 # dhcpd.conf configuration file
 
 option domain-name "vlab.local";
-option domain-name-servers 10.7.190.6, 10.7.190.7;
+option domain-name-servers 8.8.8.8;
 
 default-lease-time 600;
 max-lease-time 7200;
