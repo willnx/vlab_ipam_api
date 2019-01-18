@@ -21,6 +21,8 @@ DEFINED = OrderedDict([
             ('VLAB_INSERT_MAX_TRIES', int(environ.get('VLAB_INSERT_MAX_TRIES', 100))),
             ('VLAB_VERIFY_TOKEN', environ.get('VLAB_VERIFY_TOKEN', False)),
             ('VLAB_LOG_TARGET', environ.get('VLAB_LOG_TARGET', 'localhost:9092')),
+            ('VLAB_DDNS_KEY', environ.get('VLAB_DDNS_KEY', 'PpULFMK6UQXYhFUot++fhNcmAumx+N7GcRfzO75NgL6RBA3gdJrw1KwraVR4QkhNoL23ySpdgTpWA1dUke2ZsA==')),
+            ('VLAB_DDNS_ALGORITHM', environ.get('VLAB_DDNS_ALGORITHM', 'HMAC-SHA512')),
           ])
 
 Constants = namedtuple('Constants', list(DEFINED.keys()))
