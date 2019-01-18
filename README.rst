@@ -37,3 +37,9 @@ vlab-log-sender
 Forwards firewall logs to a remote server. The default iptables config will
 log every time a package is FORWARDed. By forwarding the logs for remote processing,
 admins of vLab can answer business questions like, *"Do they use that resource?"*
+
+
+vlab-ddns-updater
+*****************
+
+Runs on a regular cycle to send Dynamic DNS updates to the vLab DNS service.

@@ -222,6 +222,8 @@ add_envvars () {
   echo "VLAB_LOG_TARGET=localhost:9092" >> /etc/environment
   echo "VLAB_URL=https://localhost" >> /etc/environment
   echo "PRODUCTION=false" >> /etc/environment
+  echo "VLAB_DDNS_KEY=aabbcc" >> /etc/environment
+  echo "VLAB_DDNS_ALGORITHM=HMAC-SHA512" >> /etc/environment
 }
 
 add_logsender_key () {

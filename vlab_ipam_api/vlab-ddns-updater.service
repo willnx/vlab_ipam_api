@@ -1,0 +1,12 @@
+[Unit]
+Description=DDNS update client for vLab
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/environment
+ExecStart=/usr/bin/python3 ddns_updater.py
+WorkingDirectory=/usr/local/lib/python3.6/dist-packages/vlab_ipam_api
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
