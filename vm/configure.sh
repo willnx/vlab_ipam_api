@@ -116,6 +116,8 @@ setup_nat () {
   # Enable outbound DNS
   iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
   iptables -A INPUT -p udp --sport 53 -j ACCEPT
+  iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+  iptables -A INPUT -p tcp --sport 53 -j ACCEPT
 
   # Enable incoming SSH access
   iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
@@ -156,6 +158,8 @@ setup_webapp () {
   systemctl enable vlab-worker
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-log-sender.service /etc/systemd/system/vlab-log-sender.service
   systemctl enable vlab-log-sender
+  ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-ddns-updater.service /etc/systemd/system/vlab-ddns-updater.service
+  systemctl enable vlab-ddns-updater
 }
 
 setup_sudo () {

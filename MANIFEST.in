@@ -2,3 +2,4 @@ include vlab_ipam_api/app.ini
 include vlab_ipam_api/vlab-ipam.service
 include vlab_ipam_api/vlab-worker.service
 include vlab_ipam_api/vlab-log-sender.service
+include vlab_ipam_api/vlab-ddns-updater.service
