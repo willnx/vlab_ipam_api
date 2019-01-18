@@ -72,7 +72,7 @@ def update_a_record(hostname, ip, domain, keyring, algorithm):
     """
     update = dns.update.Update(domain, keyring=keyring, keyalgorithm=algorithm)
     update.replace(hostname, 300, 'a', ip) # 'a' means A-record, 300 is the TTL
-    dns.query.tcp(update, domain)
+    dns.query.udp(update, domain)
 
 
 def main():
