@@ -14,8 +14,6 @@ from setproctitle import setproctitle
 from vlab_ipam_api.lib import const, get_logger
 
 LOG_FILE = '/var/log/vlab_ipam_ddns_updater.log'
-DDNS_KEY = '/etc/vlab/ddns_key.json'
-VLAB_KEYNAME = 'DDNS_UPDATE' # The name of the key in the bind9 config defined in /etc/bind/ddns.key
 
 
 def get_ip(iface='ens160'):
