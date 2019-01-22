@@ -22,7 +22,7 @@ install_deb_deps () {
   apt-get upgrade -y
   apt-get install -y openssl libssl-dev python3 python3-dev gcc python3-pip \
                      isc-dhcp-server open-vm-tools openssh-server iptables-persistent \
-                     postgresql postgresql-contrib libpcre3 libpcre3-dev
+                     postgresql postgresql-contrib libpcre3 libpcre3-dev chrony
 }
 
 setup_nics () {
@@ -214,6 +214,47 @@ setup_rsyslog () {
 sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/g' /etc/rsyslog.conf
 }
 
+setup_ntp () {
+  echo "Configuring NTP (chrony) settings"
+  echo '
+# Welcome to the chrony config file. See chrony.conf(5) for more
+# information about usable directives
+
+# The "upstream" NTP server to sync from
+server 1.us.pool.ntp.org
+
+# Defeins NTP authentication file
+keyfile /etc/chrony/chorny.keys
+
+# Persist information about the system clock drift, so chrony can start making
+# adjustments even before establishing a connection to an NTP server
+driftfile /var/lib/chrony/chrony.drift
+
+# Log file location
+logdir /var/log/chrony
+
+# Prevent bad estimates from upsetting the system clock
+maxupdateskew 100.0
+
+# Enable kernel synchronisation every 11 minutes of the real-time clock
+rtcsync
+
+# Allow chrony to step the clock massively within the first 5 updates. This
+# enables chrony to fix the clock upon boot when the system clock is really
+# off when compaired to the real time.
+makestep 300 5
+
+# Chrony defaults to using a random port for client updates. Setting it to the
+# standard NTP port makes dealing with firewall easier because you only have to
+# open the one single (well known) port for NTP
+acquistionport 123
+
+# Let chrony also act as an NTP server for any client that can reach it over
+# the network.
+allow
+' > /etc/chrony/chrony.conf
+}
+
 clean_up () {
   # fix issue with different VMs getting same DHCP addr
   # https://github.com/chef/bento/issues/1062
@@ -260,6 +301,7 @@ main () {
   add_envvars
   add_logsender_key
   setup_db
+  setup_ntp
   clean_up
   echo "All done, shutting down machine (so you can convert it into a VM template)"
   shutdown -P now
