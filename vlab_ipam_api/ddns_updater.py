@@ -8,12 +8,14 @@ import struct
 
 import dns.query
 import dns.update
+import dns.resolver
 import dns.tsigkeyring
 from setproctitle import setproctitle
 
 from vlab_ipam_api.lib import const, get_logger
 
 LOG_FILE = '/var/log/vlab_ipam_ddns_updater.log'
+VLAB_KEYNAME = 'DDNS_UPDATE'
 
 
 def get_ip(iface='ens160'):
@@ -73,12 +75,31 @@ def update_a_record(hostname, ip, domain, keyring, algorithm):
     dns.query.udp(update, domain)
 
 
+def resolve_domain(domain):
+    """Obtain the A record for the IP address of a given domain. This function
+    exists because ``dns.query`` requires an IP.
+
+    :Returns: String
+
+    :Raises: RuntimeError
+
+    :param domain: The FQDN to obtain the IP of
+    :type domain: String
+    """
+    answer = dns.resolver.query(domain, 'a')
+    if answer != 1:
+        raise RuntimeError('Multiple records for {} found: {}'.format(domain, answer))
+    else:
+        return answer[0].to_text()
+
+
 def main():
     """Entry point for script"""
     log = get_logger(name=__name__, log_file=LOG_FILE)
     log.info('DDNS updater starting')
     keyring, algorithm = get_ddns_key_info()
     domain = const.VLAB_URL.replace("https://", "").replace("http://", "")
+    domain_ip = resolve_domain(domain)
     hostname = get_hostname()
     loop_interval = 5
     max_update_period = 120
@@ -87,6 +108,11 @@ def main():
     log.info('Sending DDNS update regardless of new IP every {} seconds'.format(max_update_period))
     current_ip = None
     count = 0
+    log.info('Domain: {}'.format(domain))
+    log.info('Domain IP: {}'.format(domain_ip))
+    log.info('Hostname: {}'.format(hostname))
+    log.info('DDNS KEY: {}'.format(const.VLAB_DDNS_KEY))
+    log.info('Key Algorithm: {}'.format(algorithm))
     while True:
         start_time = time.time()
         new_ip = get_ip()
