@@ -215,6 +215,7 @@ sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFi
 }
 
 setup_ntp () {
+  chown -R _chrony /etc/chrony
   echo "Configuring NTP (chrony) settings"
   echo '
 # Welcome to the chrony config file. See chrony.conf(5) for more
@@ -247,7 +248,7 @@ makestep 300 5
 # Chrony defaults to using a random port for client updates. Setting it to the
 # standard NTP port makes dealing with firewall easier because you only have to
 # open the one single (well known) port for NTP
-acquistionport 123
+acquisitionport 123
 
 # Let chrony also act as an NTP server for any client that can reach it over
 # the network.
