@@ -50,7 +50,7 @@ def get_ddns_key_info():
     return keyring, const.VLAB_DDNS_ALGORITHM
 
 
-def update_a_record(hostname, ip, domain, keyring, algorithm):
+def update_a_record(hostname, ip, domain, domain_ip, keyring, algorithm):
     """Update the DNS record
 
     :Returns: None
@@ -64,6 +64,9 @@ def update_a_record(hostname, ip, domain, keyring, algorithm):
     :param domain: The FQDN of the vLab server
     :type domain: String
 
+    :param domain_ip: The IPv4 address of the DNS server to send the udpate to
+    :type domain_ip: String
+
     :param keyring: The dnssec creds required for making an update
     :type keyring: dns.tsigkeyring.from_text
 
@@ -72,7 +75,7 @@ def update_a_record(hostname, ip, domain, keyring, algorithm):
     """
     update = dns.update.Update(domain, keyring=keyring, keyalgorithm=algorithm)
     update.replace(hostname, 300, 'a', ip) # 'a' means A-record, 300 is the TTL
-    dns.query.udp(update, domain)
+    dns.query.udp(update, domain_ip)
 
 
 def resolve_domain(domain):
@@ -87,8 +90,8 @@ def resolve_domain(domain):
     :type domain: String
     """
     answer = dns.resolver.query(domain, 'a')
-    if answer != 1:
-        raise RuntimeError('Multiple records for {} found: {}'.format(domain, answer))
+    if len(answer) != 1:
+        raise RuntimeError('Multiple records for {} found: {}'.format(domain, len(answer)))
     else:
         return answer[0].to_text()
 
@@ -121,6 +124,7 @@ def main():
             try:
                 update_a_record(hostname=hostname,
                                 domain=domain,
+                                domain_ip=domain_ip,
                                 ip=new_ip,
                                 keyring=keyring,
                                 algorithm=algorithm)
@@ -138,6 +142,7 @@ def main():
                 log.info('Sending DDNS update because it\'s been at least {} seconds since last update'.format(max_update_period))
                 update_a_record(hostname=hostname,
                                 domain=domain,
+                                domain_ip=domain_ip,
                                 ip=new_ip,
                                 keyring=keyring,
                                 algorithm=algorithm)
