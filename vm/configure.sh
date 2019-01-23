@@ -22,7 +22,7 @@ install_deb_deps () {
   apt-get upgrade -y
   apt-get install -y openssl libssl-dev python3 python3-dev gcc python3-pip \
                      isc-dhcp-server open-vm-tools openssh-server iptables-persistent \
-                     postgresql postgresql-contrib libpcre3 libpcre3-dev chrony
+                     postgresql postgresql-contrib libpcre3 libpcre3-dev chrony bind9
 }
 
 setup_nics () {
@@ -254,6 +254,33 @@ acquisitionport 123
 # the network.
 allow
 ' > /etc/chrony/chrony.conf
+}
+
+setup_dns () {
+  echo "Setting up DNS (bind9)"
+  echo '
+// BIND9 DNS config -- overridden version of the default Debian config
+
+options {
+  forwarders {
+    8.8.8.8;
+  };
+
+  // Only listen for DNS querys on the LAN and local networks
+  // Implictly sets the allow-query to the same interfaces
+  listen-on {
+    127.0.0.1;
+    192.168.1.1;
+  };
+  listen-on-v6 { ::1; };
+
+  dnssec-validation no;
+};
+' > /etc/bind/named.conf
+
+  # TODO 
+  systemctl disable systemd-resolved.service
+
 }
 
 clean_up () {
