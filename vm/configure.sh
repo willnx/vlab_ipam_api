@@ -105,6 +105,9 @@ setup_nat () {
 
   # Default to drop attempts to connect to this Firewall
   iptables --policy INPUT DROP
+  # But accept standard Linux TCP port range for client-initiated connections
+  # sysctl net.ipv4.ip_local_port_range
+  iptables -A INPUT -p tcp --match multiport --dports 32768:60999 -j ACCEPT
   # No IPv6 support
   ip6tables --policy INPUT DROP
   ip6tables --policy FORWARD DROP
@@ -154,6 +157,7 @@ setup_cert () {
 }
 
 setup_webapp () {
+  echo "Installing IPAM software"
   # This function installs the RESTful API for managaing the vLab Firewall
   pip3 install vlab-ipam-api
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-ipam.service /etc/systemd/system/vlab-ipam.service
@@ -167,6 +171,7 @@ setup_webapp () {
 }
 
 setup_sudo () {
+  echo "Configuring sudo"
   # This function allows the vLab RESTful API to issue iptable commands as a
   # non-root user, which in turns enables the app to not run as root.
 echo "
@@ -210,13 +215,14 @@ sed -i -e 's/local   all             postgres                                pee
 }
 
 setup_rsyslog () {
+  echo "Modifing rsyslog config"
   # This function changes the timestamp format used by rsyslog
 sed -i -e 's/$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/#$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat/g' /etc/rsyslog.conf
 }
 
 setup_ntp () {
-  chown -R _chrony /etc/chrony
   echo "Configuring NTP (chrony) settings"
+  chown -R _chrony /etc/chrony
   echo '
 # Welcome to the chrony config file. See chrony.conf(5) for more
 # information about usable directives
@@ -277,10 +283,25 @@ options {
   dnssec-validation no;
 };
 ' > /etc/bind/named.conf
-
-  # TODO 
   systemctl disable systemd-resolved.service
+}
 
+setup_cms () {
+  echo "Setting up configuration management"
+  # Handle installing config management software
+  # Add the repo's GPG key so updates work
+  wget -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
+  # Add the repo
+  touch /etc/apt/sources.list.d/saltstack.list
+  echo 'deb http://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest bionic main' > /etc/apt/sources.list.d/saltstack.list
+  # Install the software
+  apt-get update && apt-get install -y salt-minion
+
+  # Disable and remove old identity. The Gateway service will set the hostname
+  # then re-enable it. This will make it so the minion ref and the owner of the
+  # gateway coincide.
+  systemctl disable salt-minion.service
+  truncate -s0 /etc/salt/minion_id
 }
 
 clean_up () {
@@ -295,6 +316,7 @@ clean_up () {
 }
 
 add_envvars () {
+  echo "Adding enviroment variables"
   # Set the nesseary enviroment variables now so replacing them later is easier
   echo "VLAB_LOG_TARGET=localhost:9092" >> /etc/environment
   echo "VLAB_URL=https://localhost" >> /etc/environment
@@ -304,6 +326,7 @@ add_envvars () {
 }
 
 add_logsender_key () {
+  echo "Creating logsender key file"
   # Enable automation to set encryption key
   echo "changeME" > /etc/vlab/log_sender.key
 }
@@ -330,6 +353,7 @@ main () {
   add_logsender_key
   setup_db
   setup_ntp
+  setup_cms
   clean_up
   echo "All done, shutting down machine (so you can convert it into a VM template)"
   shutdown -P now
