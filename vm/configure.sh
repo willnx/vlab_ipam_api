@@ -47,7 +47,7 @@ echo '
 # dhcpd.conf configuration file
 
 option domain-name "vlab.local";
-option domain-name-servers 8.8.8.8;
+option domain-name-servers 192.168.1.1;
 
 default-lease-time 600;
 max-lease-time 7200;
@@ -354,6 +354,7 @@ main () {
   setup_db
   setup_ntp
   setup_cms
+  setup_dns
   clean_up
   echo "All done, shutting down machine (so you can convert it into a VM template)"
   shutdown -P now
