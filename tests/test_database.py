@@ -274,15 +274,28 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(sql, expected_sql)
         self.assertEqual(call_params, expected_params)
 
-    def test_lookup_port_by_all(self):
-        """``lookup_port`` generates correct SQL when the all clauses are supplied"""
+    def test_lookup_port_by_target_port(self):
+        """``lookup_port`` generates correct SQL when the "target_port" clause is supplied"""
         db = database.Database()
-        db.lookup_port(name='myVM', addr='1.2.3.4', component='CEE', conn_port=9001)
+        db.lookup_port(target_port=22)
 
         call_args, _ = self.mocked_cursor.execute.call_args
         sql, call_params = call_args
-        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_name LIKE (%s) AND target_addr LIKE (%s) AND target_component LIKE (%s) AND conn_port = (%s);'
-        expected_params = ('myVM', '1.2.3.4', 'CEE', 9001,)
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_port = (%s);'
+        expected_params = (22,)
+
+        self.assertEqual(sql, expected_sql)
+        self.assertEqual(call_params, expected_params)
+
+    def test_lookup_port_by_all(self):
+        """``lookup_port`` generates correct SQL when the all clauses are supplied"""
+        db = database.Database()
+        db.lookup_port(name='myVM', addr='1.2.3.4', component='CEE', conn_port=9001, target_port=443)
+
+        call_args, _ = self.mocked_cursor.execute.call_args
+        sql, call_params = call_args
+        expected_sql = 'SELECT conn_port, target_addr, target_name, target_port, target_component FROM ipam WHERE target_name LIKE (%s) AND target_addr LIKE (%s) AND target_component LIKE (%s) AND conn_port = (%s) AND target_port = (%s);'
+        expected_params = ('myVM', '1.2.3.4', 'CEE', 9001, 443)
 
         self.assertEqual(sql, expected_sql)
         self.assertEqual(call_params, expected_params)

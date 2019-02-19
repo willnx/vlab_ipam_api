@@ -64,6 +64,10 @@ class PortMapView(BaseView):
                          "type": "string",
                          "description": "Filter results by VM IP address"
                       },
+                      "target_port" : {
+                         "type" : "integer",
+                         "description": "Filter results by the target's port"
+                      },
                       "component": {
                          "type": "string",
                          "description": "Filter results by VM type (i.e. OneFS, InsightIQ, etc)"
@@ -85,18 +89,20 @@ class PortMapView(BaseView):
         name = request.args.get('name', None)
         addr = request.args.get('target_addr', None)
         component = request.args.get('component', None)
-        conn_port = request.args.get('conn_port', None)
-        if conn_port:
-            try:
-                conn_port = int(conn_port)
-            except Exception as doh:
-                resp_data['error'] = '%s' % doh
-                resp = Response(ujson.dumps(resp_data))
-                resp.status_code = 400
-                return resp
+        conn_port = request.args.get('conn_port', 0)
+        target_port = request.args.get('target_port', 0)
+        conn_port, target_port, error = cast_port_values(conn_port, target_port)
+        if error:
+            resp_data['error'] = error
+            resp = Response(ujson.dumps(resp_data))
+            resp.status_code = 400
+            return resp
         try:
             with Database() as db:
-                resp_data['content'] = db.lookup_port(name=name, addr=addr, component=component, conn_port=conn_port)
+                resp_data['content'] = db.lookup_port(name=name, addr=addr,
+                                                      component=component,
+                                                      conn_port=conn_port,
+                                                      target_port=target_port)
         except Exception as doh:
             logger.exception(doh)
             resp_data['error'] = '%s' % doh
@@ -168,6 +174,30 @@ class PortMapView(BaseView):
         resp = Response(ujson.dumps(resp_data))
         resp.status_code = status_code
         return resp
+
+
+def cast_port_values(conn_port_value, target_port_value):
+    """Convert (if needed) a supplied port value into an integer. If unable to
+    cast both values, an error message is returned.
+
+    :Returns: Tuple (conn_port, target_port, error)
+
+    :param conn_port_value:
+    :type conn_port_value: Castable to Int
+
+    :param target_port_value:
+    :type target_port_value: Castable to Int
+    """
+    error = None
+    try:
+        conn_port_value = int(conn_port_value)
+    except Exception:
+        error = 'Param conn_port must be a number, supplied: {}'.format(conn_port_value)
+    try:
+        target_port_value = int(target_port_value)
+    except Exception:
+        error = 'Param target_port must be a number, supplied: {}'.format(conn_port_value)
+    return conn_port_value, target_port_value, error
 
 
 def records_valid(nat_id, filter_id, target_port, target_addr):
