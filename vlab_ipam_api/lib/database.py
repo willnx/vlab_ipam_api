@@ -176,7 +176,7 @@ class Database(object):
                 ips.append(the_addr)
         return answer
 
-    def lookup_port(self, name=None, addr=None, component=None, conn_port=None):
+    def lookup_port(self, name=None, addr=None, component=None, conn_port=None, target_port=None):
         """Obtain port mapping information
 
         :Returns: Dictionary
@@ -189,6 +189,9 @@ class Database(object):
 
         :param component: The category of VM (i.e. OneFS, InsightIQ, etc)
         :type component: String
+
+        :param conn_port: The connection port
+        :type conn_port: Integer
 
         :param conn_port: The connection port
         :type conn_port: Integer
@@ -208,6 +211,9 @@ class Database(object):
         if conn_port:
             clauses.append('conn_port = (%s)')
             params.append(conn_port)
+        if target_port:
+            clauses.append('target_port = (%s)')
+            params.append(target_port)
         where = ' AND '.join(clauses)
         if where:
             query = "{} WHERE {};".format(sql, where)

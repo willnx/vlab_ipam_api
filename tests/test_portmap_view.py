@@ -56,7 +56,7 @@ class TestPortMapView(unittest.TestCase):
 
     @patch.object(portmap, 'Database')
     def test_get_bad_conn_port(self, fake_Database):
-        """GET on /api/1/ipam/portmap returns HTTP 400 is supplied with a bad value"""
+        """GET on /api/1/ipam/portmap returns HTTP 400 is supplied with a bad value for conn_port"""
         fake_db = MagicMock()
         fake_db.lookup_port.return_value = {'worked': True}
         fake_Database.return_value.__enter__.return_value = fake_db
@@ -67,6 +67,18 @@ class TestPortMapView(unittest.TestCase):
 
         self.assertEqual(resp.status_code, expected)
 
+    @patch.object(portmap, 'Database')
+    def test_get_bad_target_port(self, fake_Database):
+        """GET on /api/1/ipam/portmap returns HTTP 400 is supplied with a bad value for target_port"""
+        fake_db = MagicMock()
+        fake_db.lookup_port.return_value = {'worked': True}
+        fake_Database.return_value.__enter__.return_value = fake_db
+        resp = self.app.get('/api/1/ipam/portmap?target_port=asdf',
+                            headers={'X-Auth': self.token})
+
+        expected = 400
+
+        self.assertEqual(resp.status_code, expected)
     @patch.object(portmap, 'Database')
     def test_get_doh_status(self, fake_Database):
         """GET on /api/1/ipam/portmap returns HTTP 500 upon error"""
