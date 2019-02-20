@@ -116,11 +116,15 @@ setup_nat () {
   iptables --append INPUT -i lo -j ACCEPT
   iptables --append OUTPUT -o lo -j ACCEPT
 
-  # Enable outbound DNS
+  # Enable local DNS queries
   iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
   iptables -A INPUT -p udp --sport 53 -j ACCEPT
   iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
   iptables -A INPUT -p tcp --sport 53 -j ACCEPT
+
+  # Enable DNS queries from remote VMs
+  iptables -A INPUT -p udp -m udp --dport 53 -j ACCEPT
+  iptables -A OUTPUT -p udp -m udp --sport 53 -j ACCEPT 
 
   # Enable incoming SSH access
   iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
