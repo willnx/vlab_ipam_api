@@ -149,7 +149,7 @@ def main():
         count += 1
         elapsed_time = time.time() - start_time
         loop_delta = max(loop_interval - elapsed_time, 0) # avoid negative sleep
-        log.info('Will start next IP check in {} seconds'.format(loop_delta))
+        log.debug('Will start next IP check in {} seconds'.format(loop_delta))
         time.sleep(loop_delta)
 
 
