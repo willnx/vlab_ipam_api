@@ -10,6 +10,7 @@ from flask_classy import request, Response
 from vlab_api_common import BaseView, describe, get_logger, requires, validate_input
 
 from vlab_ipam_api.lib import const, Database
+from vlab_ipam_api.ddns_updater import get_ip
 from vlab_ipam_api.lib.exceptions import DatabaseError, CliError
 
 logger = get_logger(__name__, loglevel=const.VLAB_IPAM_LOG_LEVEL)
@@ -99,14 +100,16 @@ class PortMapView(BaseView):
             return resp
         try:
             with Database() as db:
-                resp_data['content'] = db.lookup_port(name=name, addr=addr,
-                                                      component=component,
-                                                      conn_port=conn_port,
-                                                      target_port=target_port)
+                resp_data['content']['ports'] = db.lookup_port(name=name, addr=addr,
+                                                               component=component,
+                                                               conn_port=conn_port,
+                                                               target_port=target_port)
         except Exception as doh:
             logger.exception(doh)
             resp_data['error'] = '%s' % doh
             status_code = 500
+        else:
+            resp_data['content']['gateway_ip'] = get_ip()
         resp = Response(ujson.dumps(resp_data))
         resp.status_code = status_code
         return resp

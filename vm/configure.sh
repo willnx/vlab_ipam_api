@@ -124,7 +124,7 @@ setup_nat () {
 
   # Enable DNS queries from remote VMs
   iptables -A INPUT -p udp -m udp --dport 53 -j ACCEPT
-  iptables -A OUTPUT -p udp -m udp --sport 53 -j ACCEPT 
+  iptables -A OUTPUT -p udp -m udp --sport 53 -j ACCEPT
 
   # Enable incoming SSH access
   iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
@@ -163,7 +163,7 @@ setup_cert () {
 setup_webapp () {
   echo "Installing IPAM software"
   # This function installs the RESTful API for managaing the vLab Firewall
-  pip3 install vlab-ipam-api
+  pip3 --trusted-host pypi.org --trusted-host files.python.org install vlab-ipam-api
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-ipam.service /etc/systemd/system/vlab-ipam.service
   systemctl enable vlab-ipam
   ln -s /usr/local/lib/python3.6/dist-packages/vlab_ipam_api/vlab-worker.service /etc/systemd/system/vlab-worker.service
