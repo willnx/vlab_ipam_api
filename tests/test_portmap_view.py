@@ -40,9 +40,11 @@ class TestPortMapView(unittest.TestCase):
         cls.fake_logger = MagicMock()
         portmap.logger = cls.fake_logger
 
+    @patch.object(portmap, 'get_ip')
     @patch.object(portmap, 'Database')
-    def test_get(self, fake_Database):
+    def test_get(self, fake_Database, fake_ip):
         """GET on /api/1/ipam/portmap returns the port mapping rules"""
+        fake_ip.return_value = 'some.ip.value'
         fake_db = MagicMock()
         fake_db.lookup_port.return_value = {'worked': True}
         fake_Database.return_value.__enter__.return_value = fake_db
@@ -50,7 +52,7 @@ class TestPortMapView(unittest.TestCase):
                             headers={'X-Auth': self.token})
 
         output = resp.json['content']
-        expected = {'worked': True}
+        expected = {'gateway_ip': 'some.ip.value', 'ports': {'worked': True}}
 
         self.assertEqual(output, expected)
 
