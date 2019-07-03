@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 """This module uploads logs to a remote server"""
+import os
 import time
 
 import ujson
@@ -23,13 +24,32 @@ def tail(a_file):
     :params a_file: The path to the file you want to follow/tail
     :type a_file: String
     """
-    with open(a_file) as fp:
-        fp.seek(0,2) # start at the end of the file
-        while True:
-            line = fp.readline()
-            if not line:
-                time.sleep(0.2)
-            yield line
+    while True:
+        file_inode = os.stat(a_file).st_ino
+        with open(a_file) as fp:
+            fp.seek(0,2) # start at the end of the file
+            while True:
+                line = fp.readline()
+                if not line:
+                    if file_rotated(a_file, file_inode):
+                        break
+                    time.sleep(0.2)
+                yield line
+
+
+def file_rotated(a_file, file_inode):
+    """Detects if a file has been rotated (by rsyslog)
+
+    :Returns: Boolean
+
+    :param a_file: The file being monitored
+    :type a_file: String
+
+    :param file_inode: The inode of the file when monitoring begain
+    :type file_inode: Integer
+    """
+    current_inode = os.stat(a_file).st_ino
+    return file_inode != current_inode
 
 
 def get_cipher():

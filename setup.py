@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 setup(name="vlab-ipam-api",
       author="Nicholas Willhite,",
       author_email='willnx84@gmail.com',
-      version='2019.02.22',
+      version='2019.07.03',
       packages=find_packages(),
       include_package_data=True,
       classifiers=[

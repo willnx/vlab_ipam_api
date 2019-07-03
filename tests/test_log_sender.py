@@ -14,14 +14,44 @@ class TestLogSender(unittest.TestCase):
         key = log_sender.Fernet.generate_key()
         cls.cipher = log_sender.Fernet(key)
 
-    def test_tail_generator(self):
+    @patch.object(log_sender.os, 'stat')
+    def test_tail_generator(self, fake_stat):
         """``tail`` returns a generator"""
+        fake_file_stat = MagicMock()
+        fake_file_stat.st_ino = 2
+        fake_stat.return_value = fake_file_stat
         fake_fp = MagicMock()
         with patch("builtins.open", mock_open(mock=fake_fp)) as mock_file:
             logs = log_sender.tail('/some/log/file')
             next(logs)
 
         self.assertTrue(isinstance(logs, types.GeneratorType))
+
+    @patch.object(log_sender, 'file_rotated')
+    @patch.object(log_sender.os, 'stat')
+    def test_tail_generator_rotate(self, fake_stat, fake_file_rotated):
+        """``tail`` detects if the file is rotated"""
+        fake_file_rotated.side_effect = [True, False]
+        fake_file_stat = MagicMock()
+        fake_file_stat.st_ino = 2
+        fake_stat.return_value = fake_file_stat
+        fake_fp = MagicMock()
+        with patch("builtins.open", mock_open(mock=fake_fp)) as mock_file:
+            logs = log_sender.tail('/some/log/file')
+            next(logs)
+
+        self.assertTrue(fake_file_rotated.call_count, 2)
+
+    @patch.object(log_sender.os, 'stat')
+    def test_file_rotated(self, fake_stat):
+        """``file_rotated`` detects if a file has been rotated"""
+        fake_file_stat = MagicMock()
+        fake_file_stat.st_ino = 2
+        fake_stat.return_value = fake_file_stat
+
+        rotated = log_sender.file_rotated(a_file='/some/file.txt', file_inode=234)
+
+        self.assertTrue(rotated)
 
     def test_get_cipher(self):
         """``get_cipher`` returns an object for encrypting messages"""
