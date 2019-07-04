@@ -22,7 +22,8 @@ install_deb_deps () {
   apt-get upgrade -y
   apt-get install -y openssl libssl-dev python3 python3-dev gcc python3-pip \
                      isc-dhcp-server open-vm-tools openssh-server iptables-persistent \
-                     postgresql postgresql-contrib libpcre3 libpcre3-dev chrony bind9
+                     postgresql postgresql-contrib libpcre3 libpcre3-dev chrony bind9 \
+                     libpq-dev
 }
 
 setup_nics () {
