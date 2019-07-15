@@ -1,3 +1,8 @@
+.. image:: https://travis-ci.org/willnx/vlab_ipam_api.svg?branch=master
+    :target: https://travis-ci.org/willnx/vlab_ipam_api
+
+.. _vlab-ipam:
+
 #############
 vLab IPAM API
 #############
