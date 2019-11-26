@@ -15,6 +15,48 @@ setup_sysctls () {
   echo "net.core.somaxconn=1024" >> /etc/sysctl.conf
 }
 
+setup_logrotate () {
+  # Aggressivetly rotate the logs to avoid filling the root partition
+  echo "\
+# see "man logrotate" for details
+# rotate log files every day
+daily
+
+# use the syslog group by default, since this is the owning group
+# of /var/log/syslog.
+su root syslog
+
+# keep only yesterday's log
+rotate 1
+
+# create new (empty) log files after rotating old ones
+create
+
+# uncomment this if you want your log files compressed
+compress
+
+# packages drop log rotation information into this directory
+include /etc/logrotate.d
+
+# no packages own wtmp, or btmp -- we'll rotate them here
+/var/log/wtmp {
+    missingok
+    monthly
+    create 0664 root utmp
+    rotate 1
+}
+
+/var/log/btmp {
+    missingok
+    monthly
+    create 0660 root utmp
+    rotate 1
+}
+
+# system-specific logs may be configured here
+" > /etc/logrotate.conf
+}
+
 install_deb_deps () {
   # Install all the libs needed in Ubuntu, like OpenSSL and what-not
   echo "Installing dependancies"
@@ -347,6 +389,7 @@ main () {
   echo "Converting Ubuntu 18.04 server into vLab Firewall"
   setup_etc
   setup_sysctls
+  setup_logrotate
   install_deb_deps
   setup_nics
   setup_nat
