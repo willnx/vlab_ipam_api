@@ -102,7 +102,7 @@ ddns-update-style none;
 authoritative;
 
 subnet 192.168.1.0 netmask 255.255.255.0 {
-  range 192.168.1.150 192.168.1.254;
+  range 192.168.1.150 192.168.1.219;
   option routers 192.168.1.1;
 }
 ' > /etc/dhcp/dhcpd.conf
